@@ -6,6 +6,10 @@
 
 Bidirectional **GitHub Flavored Markdown (GFM) to / from Atlassian Document Format (ADF)** converter. 
 
+## AI Notice
+
+This package has predominantly AI-generated code. Keep this in mind in case you have a strict policy against using ai-generated code in your project.
+
 ## Install
 
 ```bash
