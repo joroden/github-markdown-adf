@@ -1,0 +1,158 @@
+# github-markdown-adf
+
+[![npm version](https://img.shields.io/npm/v/github-markdown-adf)](https://www.npmjs.com/package/github-markdown-adf)
+[![CI](https://github.com/joroden/github-markdown-adf/actions/workflows/ci.yml/badge.svg)](https://github.com/joroden/github-markdown-adf/actions)
+[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](https://unlicense.org)
+
+Bidirectional **GitHub Flavored Markdown (GFM) to / from Atlassian Document Format (ADF)** converter. 
+
+## Install
+
+```bash
+npm install github-markdown-adf
+# or
+pnpm add github-markdown-adf
+# or
+yarn add github-markdown-adf
+```
+
+## Usage
+
+### Markdown → ADF
+
+```typescript
+import { mdToAdf } from 'github-markdown-adf';
+
+const markdown = `
+# Hello World
+
+This is **bold** and _italic_ text.
+
+- Item 1
+- Item 2
+`;
+
+const adf = mdToAdf(markdown);
+// adf is a fully typed AdfDoc object
+console.log(JSON.stringify(adf, null, 2));
+```
+
+### ADF → Markdown
+
+```typescript
+import { adfToMd } from 'github-markdown-adf';
+
+const adf = {
+  version: 1,
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: 'Paragraph Text' }]
+    }
+  ]
+};
+
+const markdown = adfToMd(adf);
+```
+
+## CDN / Browser (no bundler)
+
+A self-contained browser bundle with all dependencies inlined is available via CDN:
+
+**IIFE (`<script>` tag)**
+```html
+<script src="https://cdn.jsdelivr.net/npm/github-markdown-adf/dist/browser/index.iife.js"></script>
+<script>
+  const adf = GithubMarkdownAdf.mdToAdf('# Hello World');
+  const md  = GithubMarkdownAdf.adfToMd(adf);
+</script>
+```
+
+**ESM (`<script type="module">`)**
+```html
+<script type="module">
+  import { mdToAdf, adfToMd } from 'https://cdn.jsdelivr.net/npm/github-markdown-adf/dist/browser/index.js';
+
+  const adf = mdToAdf('# Hello World');
+</script>
+```
+
+## Supported Features
+
+### Markdown → ADF
+
+| Feature | Syntax |
+|---|---|
+| Headings | `# H1` through `###### H6` |
+| Paragraphs | Plain text blocks |
+| Bold | `**bold**` |
+| Italic | `_italic_` |
+| Strikethrough | `~~strike~~` |
+| Inline code | `` `code` `` |
+| Underline | `<u>text</u>` |
+| Subscript / Superscript | `<sub>x</sub>` / `<sup>2</sup>` |
+| Links | `[text](url "title")` |
+| Images | `![alt](url)` |
+| Blockquotes | `> text` |
+| Horizontal rules | `---` |
+| Bullet lists | `- item` |
+| Ordered lists | `1. item` |
+| Nested lists | Indented list items |
+| Task lists | `- [ ] todo` / `- [x] done` |
+| Code blocks | ` ```lang ` fenced blocks |
+| Tables | GFM pipe tables |
+| GitHub Alerts | `> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]` → ADF Panels |
+| Expandable sections | `<details><summary>…</summary>…</details>` → ADF Expand nodes |
+
+### ADF → Markdown
+
+| ADF Node / Mark | Output |
+|---|---|
+| Text marks | `bold`, `italic`, `strike`, `underline`, `` code ``, links, color, background |
+| Panels (info, note, warning, success, error, tip) | GitHub-style `> [!NOTE]` alerts |
+| Expand / NestedExpand | `<details><summary>…</summary>…</details>` |
+| Tables | GFM pipe tables |
+| Bullet / ordered lists | `- item` / `1. item` |
+| Task lists | `- [ ]` / `- [x]` |
+| Decision lists | `- [ ]` / `- [x]` |
+| Mentions | `@accountId` |
+| Emojis | Unicode emoji character |
+| Hard breaks | `\` trailing newline |
+| Media (single, group, inline) | Markdown image links |
+| Block cards / embed cards / inline cards | Markdown links |
+| Date | ISO date string |
+| Status | Inline text |
+| Layout sections | Rendered content (layout structure flattened) |
+
+## API
+
+```typescript
+import { mdToAdf, adfToMd } from 'github-markdown-adf';
+```
+
+### `mdToAdf(markdown: string): AdfDoc`
+
+Converts a GFM string to an ADF document object. Parses using [remark](https://github.com/remarkjs/remark) / [unified](https://github.com/unifiedjs/unified) with full GFM extensions: tables, task lists, strikethrough, and GitHub Alert syntax (`> [!NOTE]`, `> [!WARNING]`, etc.).
+
+### `adfToMd(adf: AdfDoc): string`
+
+Converts an ADF document object to a GFM string. Handles all standard ADF node and mark types and produces clean, readable output targeting GitHub Flavored Markdown.
+
+## TypeScript Types
+
+All ADF types are exported for use in your own code:
+
+```typescript
+import type { AdfDoc, AdfNode, AdfMark, AdfInlineNode, AdfTopLevelBlockNode } from 'github-markdown-adf';
+// Also available: ParagraphNode, HeadingNode, TableNode, PanelNode, CodeBlockNode,
+// BulletListNode, OrderedListNode, TaskListNode, TextNode, MentionNode, ...and more
+```
+
+## Requirements
+
+- Node.js ≥ 22, **or any modern browser** (Chrome 92+, Firefox 95+, Safari 15.2+)
+
+## License
+
+[Unlicense](https://unlicense.org) — public domain. No restrictions.

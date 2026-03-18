@@ -1,0 +1,90 @@
+{
+  "name": "github-markdown-adf",
+  "version": "0.0.0-semantic-release",
+  "description": "Bidirectional GitHub Flavored Markdown (GFM) to/from Atlassian Document Format (ADF) converter for Node.js, browsers, and TypeScript.",
+  "type": "module",
+  "license": "Unlicense",
+  "keywords": [
+    "adf",
+    "atlassian",
+    "jira",
+    "markdown",
+    "parser",
+    "converter",
+    "bidirectional",
+    "gfm",
+    "github-flavored-markdown",
+    "atlassian-document-format"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joroden/github-markdown-adf.git"
+  },
+  "homepage": "https://github.com/joroden/github-markdown-adf#readme",
+  "bugs": {
+    "url": "https://github.com/joroden/github-markdown-adf/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.26.1",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "unpkg": "./dist/browser/index.iife.js",
+  "jsdelivr": "./dist/browser/index.iife.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome lint .",
+    "prepublishOnly": "pnpm run build && pnpm run test",
+    "release": "semantic-release",
+    "release:dry-run": "semantic-release --dry-run --no-ci"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "mdast-util-from-markdown": "^2.0.3",
+    "mdast-util-gfm": "^3.1.0",
+    "micromark-extension-gfm": "^3.0.0",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.8",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^25.5.0",
+    "semantic-release": "^25.0.3",
+    "tsdown": "^0.21.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  }
+}
