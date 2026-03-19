@@ -7,16 +7,32 @@ import {
   transformParagraph,
   transformThematicBreak,
 } from './blocks.js';
+import { buildDetailsPairs, tryTransformExpand } from './expand.js';
 import { transformHtmlBlock } from './inlines.js';
 import { transformList } from './lists.js';
 import { transformTable } from './tables.js';
 
 export function transformRoot(root: Root): AdfDoc {
-  const content = root.children.flatMap((node) => {
-    const result = transformBlock(node as BlockContent);
-    return result ? [result] : [];
-  });
+  const content = transformNodes(root.children as BlockContent[]);
   return { version: 1, type: 'doc', content };
+}
+
+function transformNodes(nodes: BlockContent[]): AdfTopLevelBlockNode[] {
+  const result: AdfTopLevelBlockNode[] = [];
+  const detailsPairs = buildDetailsPairs(nodes);
+  let i = 0;
+  while (i < nodes.length) {
+    const expand = tryTransformExpand(nodes, i, detailsPairs, transformBlock);
+    if (expand) {
+      result.push(expand.node);
+      i = expand.next;
+      continue;
+    }
+    const transformed = transformBlock(nodes[i]!);
+    if (transformed) result.push(transformed);
+    i++;
+  }
+  return result;
 }
 
 export function transformBlock(

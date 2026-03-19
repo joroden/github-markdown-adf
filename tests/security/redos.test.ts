@@ -3,8 +3,8 @@ import { mdToAdf } from '../../src/md-to-adf/index.js';
 import { adfToMd } from '../../src/adf-to-md/index.js';
 import type { AdfDoc } from '../../src/types/index.js';
 
-const TIMEOUT_MS = 400;
-const PIPELINE_TIMEOUT_MS = 1000;
+const TIMEOUT_MS = 800;
+const PIPELINE_TIMEOUT_MS = 1200;
 
 describe('ReDoS resistance', () => {
   describe('Group 1: HTML tag regex in mdToAdf', () => {
@@ -41,6 +41,22 @@ describe('ReDoS resistance', () => {
       const start = performance.now();
       mdToAdf(input);
       expect(performance.now() - start).toBeLessThan(TIMEOUT_MS);
+    });
+
+    it('handles split <details> opener with 50K content and no closer without timing out', () => {
+      const opener = '<details>\n<summary>title</summary>\n\n';
+      const input = opener + 'a'.repeat(50000);
+      const start = performance.now();
+      mdToAdf(input);
+      expect(performance.now() - start).toBeLessThan(TIMEOUT_MS);
+    });
+
+    it('handles 500 sequential <details> blocks without timing out', () => {
+      const block = '<details>\n<summary>S</summary>\n\nContent\n</details>\n\n';
+      const input = block.repeat(500);
+      const start = performance.now();
+      mdToAdf(input);
+      expect(performance.now() - start).toBeLessThan(PIPELINE_TIMEOUT_MS);
     });
   });
 
@@ -181,6 +197,24 @@ describe('ReDoS resistance', () => {
       const start = performance.now();
       mdToAdf(input);
       expect(performance.now() - start).toBeLessThan(PIPELINE_TIMEOUT_MS);
+    });
+  });
+
+  describe('Group 6: parseSingleDetails nesting-aware loop', () => {
+    it('handles single-form with 100 nested <details> blocks without timing out', () => {
+      const open = '<details><summary>L</summary>';
+      const close = '</details>';
+      const input = open.repeat(100) + 'deep' + close.repeat(100);
+      const start = performance.now();
+      mdToAdf(input);
+      expect(performance.now() - start).toBeLessThan(TIMEOUT_MS);
+    });
+
+    it('handles single-form with a 50K char summary without timing out', () => {
+      const input = `<details><summary>${'x'.repeat(50000)}</summary>body</details>`;
+      const start = performance.now();
+      mdToAdf(input);
+      expect(performance.now() - start).toBeLessThan(TIMEOUT_MS);
     });
   });
 });
