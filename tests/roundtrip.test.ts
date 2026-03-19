@@ -471,3 +471,33 @@ describe('ADF → MD → ADF roundtrips', () => {
     expect(bq.type).toBe('blockquote');
   });
 });
+
+describe('expand / details roundtrips', () => {
+  it('MD → ADF → MD: details block roundtrips exactly', () => {
+    const md = '<details>\n<summary>Click me</summary>\n\nHidden content\n</details>';
+    expect(roundtripMdToAdf(md)).toBe(md);
+  });
+
+  it('MD → ADF → MD: details with multiple paragraphs roundtrips exactly', () => {
+    const md = '<details>\n<summary>Multi</summary>\n\nFirst\n\nSecond\n</details>';
+    expect(roundtripMdToAdf(md)).toBe(md);
+  });
+
+  it('ADF → MD → ADF: expand node roundtrips to expand node', () => {
+    const adf: AdfDoc = {
+      version: 1,
+      type: 'doc',
+      content: [
+        {
+          type: 'expand',
+          attrs: { title: 'Details' },
+          content: [
+            { type: 'paragraph', content: [{ type: 'text', text: 'Body' }] },
+          ],
+        },
+      ],
+    };
+    const result = roundtripAdfToMd(adf);
+    expect(result.content[0]?.type).toBe('expand');
+  });
+});

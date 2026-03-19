@@ -130,6 +130,18 @@ describe('Injection resistance', () => {
       }
       expect(() => mdToAdf(input)).not.toThrow();
     });
+
+    it('does not crash on split <details> opener with no matching closer', () => {
+      const input = '<details>\n<summary>Title</summary>\n\nsome content with no closing tag';
+      expect(() => mdToAdf(input)).not.toThrow();
+    });
+
+    it('does not crash on 20 levels of nested <details> blocks', () => {
+      const open = '<details>\n<summary>Level</summary>\n\n';
+      const close = '\n</details>\n\n';
+      const input = open.repeat(20) + 'deep content' + close.repeat(20);
+      expect(() => mdToAdf(input)).not.toThrow();
+    });
   });
 
   describe('Group 5: Markdown injection via ADF → MD', () => {
@@ -256,6 +268,26 @@ describe('Injection resistance', () => {
         ],
       };
       expect(() => adfToMd(doc)).not.toThrow();
+    });
+  });
+
+  describe('Group 7: Details/expand injection', () => {
+    it('preserves script tag in summary as a literal title string', () => {
+      const doc = mdToAdf(
+        '<details>\n<summary><script>alert(1)</script></summary>\n\ncontent\n</details>',
+      );
+      expect(doc.content[0]).toMatchObject({ type: 'expand' });
+      const expand = doc.content[0] as { type: string; attrs: { title: string } };
+      expect(expand.attrs.title).toBe('<script>alert(1)</script>');
+    });
+
+    it('does not crash when summary has event-handler attributes', () => {
+      const doc = mdToAdf(
+        '<details>\n<summary onclick="alert(1)">Click</summary>\n\ncontent\n</details>',
+      );
+      expect(doc.content[0]).toMatchObject({ type: 'expand' });
+      const expand = doc.content[0] as { type: string; attrs: { title: string } };
+      expect(expand.attrs.title).toBe('Click');
     });
   });
 });
