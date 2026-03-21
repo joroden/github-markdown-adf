@@ -139,18 +139,37 @@ import { mdToAdf, adfToMd } from 'github-markdown-adf';
 
 Converts a GFM string to an ADF document object. Parses using [remark](https://github.com/remarkjs/remark) / [unified](https://github.com/unifiedjs/unified) with full GFM extensions: tables, task lists, strikethrough, and GitHub Alert syntax (`> [!NOTE]`, `> [!WARNING]`, etc.).
 
-### `adfToMd(adf: AdfDoc): string`
+### `adfToMd(adf: AdfDoc, options?: AdfToMdOptions): string`
 
 Converts an ADF document object to a GFM string. Handles all standard ADF node and mark types and produces clean, readable output targeting GitHub Flavored Markdown.
 
+## Options
+
+`adfToMd` accepts an optional second argument to control rendering behaviour.
+
+### `AdfToMdOptions`
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `mentions` | `boolean` | `true` | When `true`, renders mention nodes as the display text if available, otherwise as `@{id}`. When `false`, renders as plain text: display text if available, otherwise just the bare `{id}` without an `@` prefix. |
+
+### Usage example
+
+```typescript
+// Render mentions as plain text instead of @-tagged references
+const md = adfToMd(adfDoc, { mentions: false });
+```
+
 ## TypeScript Types
 
-All ADF types are exported for use in your own code:
+All ADF types and option interfaces are exported for use in your own code:
 
 ```typescript
 import type { AdfDoc, AdfNode, AdfMark, AdfInlineNode, AdfTopLevelBlockNode } from 'github-markdown-adf';
 // Also available: ParagraphNode, HeadingNode, TableNode, PanelNode, CodeBlockNode,
 // BulletListNode, OrderedListNode, TaskListNode, TextNode, MentionNode, ...and more
+
+import type { AdfToMdOptions } from 'github-markdown-adf';
 ```
 
 ## Requirements

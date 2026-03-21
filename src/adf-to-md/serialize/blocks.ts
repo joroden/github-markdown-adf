@@ -7,17 +7,18 @@ import type {
   ParagraphNode,
   RuleNode,
 } from '../../types/index.js';
+import type { AdfToMdOptions } from '../../types/index.js';
 import { serializeInlineNodes } from './inlines.js';
 
 export type SerializeBlockFn = (node: AdfTopLevelBlockNode | AdfNode) => string;
 
-export function serializeHeading(node: HeadingNode): string {
+export function serializeHeading(node: HeadingNode, options?: AdfToMdOptions): string {
   const prefix = '#'.repeat(node.attrs.level);
-  return `${prefix} ${serializeInlineNodes(node.content)}`;
+  return `${prefix} ${serializeInlineNodes(node.content, options)}`;
 }
 
-export function serializeParagraph(node: ParagraphNode): string {
-  return serializeInlineNodes(node.content);
+export function serializeParagraph(node: ParagraphNode, options?: AdfToMdOptions): string {
+  return serializeInlineNodes(node.content, options);
 }
 
 export function serializeCodeBlock(node: CodeBlockNode): string {

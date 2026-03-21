@@ -54,64 +54,74 @@ const ALERT_TO_PANEL: Record<string, PanelType> = {
   CAUTION: 'error',
 };
 
+function buildPanelContent(
+  firstChild: Paragraph,
+  restChildren: BlockContent[],
+  transformChildren: (nodes: BlockContent[]) => AdfTopLevelBlockNode[],
+): AdfTopLevelBlockNode[] {
+  const firstText = firstChild.children[0] as { type: 'text'; value: string };
+  const remainingText = firstText.value.replace(ALERT_PATTERN, '').trim();
+  const remainingInlines = firstChild.children.slice(1);
+
+  const contentNodes: AdfTopLevelBlockNode[] = [];
+
+  if (remainingText || remainingInlines.length > 0) {
+    const paragraph: Paragraph = {
+      type: 'paragraph',
+      children: [
+        ...(remainingText ? [{ type: 'text' as const, value: remainingText }] : []),
+        ...remainingInlines,
+      ],
+    };
+    if (paragraph.children.length > 0) {
+      contentNodes.push(transformParagraph(paragraph));
+    }
+  }
+
+  contentNodes.push(
+    ...(transformChildren(restChildren) as Array<PanelNode['content'][number]>),
+  );
+
+  if (contentNodes.length === 0) {
+    contentNodes.push({ type: 'paragraph', content: [] });
+  }
+
+  return contentNodes;
+}
+
+function tryTransformAlert(
+  node: Blockquote,
+  transformChildren: (nodes: BlockContent[]) => AdfTopLevelBlockNode[],
+): PanelNode | null {
+  const firstChild = node.children[0];
+  if (firstChild?.type !== 'paragraph') return null;
+
+  const firstText = firstChild.children[0];
+  if (firstText?.type !== 'text') return null;
+
+  const match = ALERT_PATTERN.exec(firstText.value);
+  if (!match) return null;
+
+  const alertType = (match[1] ?? 'NOTE').toUpperCase();
+  const panelType: PanelType = ALERT_TO_PANEL[alertType] ?? 'info';
+  const restChildren = node.children.slice(1) as BlockContent[];
+  const content = buildPanelContent(firstChild, restChildren, transformChildren);
+
+  return { type: 'panel', attrs: { panelType }, content: content as PanelNode['content'] };
+}
+
 export function transformBlockquote(
   node: Blockquote,
   transformChildren: (nodes: BlockContent[]) => AdfTopLevelBlockNode[],
 ): BlockquoteNode | PanelNode {
-  const firstChild = node.children[0];
-  if (firstChild?.type === 'paragraph') {
-    const firstText = firstChild.children[0];
-    if (firstText?.type === 'text') {
-      const match = ALERT_PATTERN.exec(firstText.value);
-      if (match) {
-        const alertType = (match[1] ?? 'NOTE').toUpperCase();
-        const panelType: PanelType = ALERT_TO_PANEL[alertType] ?? 'info';
-        const remainingFirstParagraphText = firstText.value
-          .replace(ALERT_PATTERN, '')
-          .trim();
-        const remainingChildren = [...firstChild.children.slice(1)];
-        const contentNodes: AdfTopLevelBlockNode[] = [];
-        if (remainingFirstParagraphText || remainingChildren.length > 0) {
-          const newParagraph: Paragraph = {
-            type: 'paragraph',
-            children: [
-              ...(remainingFirstParagraphText
-                ? [
-                    {
-                      type: 'text' as const,
-                      value: remainingFirstParagraphText,
-                    },
-                  ]
-                : []),
-              ...remainingChildren,
-            ],
-          };
-          if (newParagraph.children.length > 0) {
-            contentNodes.push(transformParagraph(newParagraph));
-          }
-        }
-        const restChildren = node.children.slice(1) as BlockContent[];
-        contentNodes.push(
-          ...(transformChildren(restChildren) as Array<
-            PanelNode['content'][number]
-          >),
-        );
-        if (contentNodes.length === 0)
-          contentNodes.push({ type: 'paragraph', content: [] });
-        return {
-          type: 'panel',
-          attrs: { panelType },
-          content: contentNodes as PanelNode['content'],
-        };
-      }
-    }
-  }
+  const panel = tryTransformAlert(node, transformChildren);
+  if (panel) return panel;
+
   const content = transformChildren(
     node.children as BlockContent[],
   ) as BlockquoteNode['content'];
   return {
     type: 'blockquote',
-    content:
-      content.length > 0 ? content : [{ type: 'paragraph', content: [] }],
+    content: content.length > 0 ? content : [{ type: 'paragraph', content: [] }],
   };
 }
