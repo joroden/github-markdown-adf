@@ -3,6 +3,7 @@ import type {
   AdfTopLevelBlockNode,
   LayoutSectionNode,
 } from '../../types/index.js';
+import type { AdfToMdOptions } from '../../types/index.js';
 import {
   serializeBlockquote,
   serializeCodeBlock,
@@ -25,34 +26,34 @@ import {
 } from './panels.js';
 import { serializeTable } from './tables.js';
 
-export function serializeBlock(node: AdfTopLevelBlockNode | AdfNode): string {
+export function serializeBlock(node: AdfTopLevelBlockNode | AdfNode, options?: AdfToMdOptions): string {
   switch (node.type) {
     case 'paragraph':
-      return serializeParagraph(node);
+      return serializeParagraph(node, options);
     case 'heading':
-      return serializeHeading(node);
+      return serializeHeading(node, options);
     case 'codeBlock':
       return serializeCodeBlock(node);
     case 'rule':
       return serializeRule(node);
     case 'blockquote':
-      return serializeBlockquote(node, serializeBlock);
+      return serializeBlockquote(node, (n) => serializeBlock(n, options));
     case 'bulletList':
-      return serializeBulletList(node);
+      return serializeBulletList(node, 0, options);
     case 'orderedList':
-      return serializeOrderedList(node);
+      return serializeOrderedList(node, 0, options);
     case 'taskList':
-      return serializeTaskList(node);
+      return serializeTaskList(node, 0, options);
     case 'decisionList':
-      return serializeDecisionList(node);
+      return serializeDecisionList(node, 0, options);
     case 'table':
       return serializeTable(node);
     case 'panel':
-      return serializePanel(node, serializeBlock);
+      return serializePanel(node, (n) => serializeBlock(n, options));
     case 'expand':
-      return serializeExpand(node, serializeBlock);
+      return serializeExpand(node, (n) => serializeBlock(n, options));
     case 'nestedExpand':
-      return serializeExpand(node, serializeBlock);
+      return serializeExpand(node, (n) => serializeBlock(n, options));
     case 'mediaSingle':
       return serializeMediaSingle(node);
     case 'blockCard':
@@ -60,16 +61,16 @@ export function serializeBlock(node: AdfTopLevelBlockNode | AdfNode): string {
     case 'embedCard':
       return serializeEmbedCard(node);
     case 'layoutSection':
-      return serializeLayoutSection(node);
+      return serializeLayoutSection(node, options);
     default:
       return '';
   }
 }
 
-function serializeLayoutSection(node: LayoutSectionNode): string {
+function serializeLayoutSection(node: LayoutSectionNode, options?: AdfToMdOptions): string {
   return node.content
     .map((col) =>
-      col.content.map((child) => serializeBlock(child)).join('\n\n'),
+      col.content.map((child) => serializeBlock(child, options)).join('\n\n'),
     )
     .join('\n\n---\n\n');
 }
