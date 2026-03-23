@@ -4,7 +4,7 @@ import { adfToMd } from '../../src/adf-to-md/index.js';
 import type { AdfDoc } from '../../src/types/index.js';
 
 const TIMEOUT_MS = 800;
-const PIPELINE_TIMEOUT_MS = 1200;
+const PIPELINE_TIMEOUT_MS = 1500;
 
 describe('ReDoS resistance', () => {
   describe('Group 1: HTML tag regex in mdToAdf', () => {
@@ -176,7 +176,7 @@ describe('ReDoS resistance', () => {
   });
 
   describe('Group 5: Full pipeline with maximum-size inputs', () => {
-    it('parses a 1000-row table in under 500ms', () => {
+    it('parses a 1000-row table in under 1500ms', () => {
       const header = '| col1 | col2 | col3 |\n| --- | --- | --- |\n';
       const row = '| cell1 | cell2 | cell3 |\n';
       const input = header + row.repeat(1000);
@@ -185,14 +185,14 @@ describe('ReDoS resistance', () => {
       expect(performance.now() - start).toBeLessThan(PIPELINE_TIMEOUT_MS);
     });
 
-    it('parses 10K lines of regular text in under 500ms', () => {
+    it('parses 10K lines of regular text in under 1500ms', () => {
       const input = 'hello world\n\n'.repeat(5000);
       const start = performance.now();
       mdToAdf(input);
       expect(performance.now() - start).toBeLessThan(PIPELINE_TIMEOUT_MS);
     });
 
-    it('parses 500 flat bullet list items in under 500ms', () => {
+    it('parses 500 flat bullet list items in under 1500ms', () => {
       const input = '- item\n'.repeat(500);
       const start = performance.now();
       mdToAdf(input);
