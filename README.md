@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/github-markdown-adf)](https://www.npmjs.com/package/github-markdown-adf)
 [![CI](https://github.com/joroden/github-markdown-adf/actions/workflows/ci.yml/badge.svg)](https://github.com/joroden/github-markdown-adf/actions)
+[![Socket Badge](https://badge.socket.dev/npm/package/github-markdown-adf/1.1.0)](https://badge.socket.dev/npm/package/github-markdown-adf/1.1.0)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](https://unlicense.org)
 
 Bidirectional **GitHub Flavored Markdown (GFM) to / from Atlassian Document Format (ADF)** converter. 
