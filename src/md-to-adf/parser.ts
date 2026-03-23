@@ -1,10 +1,13 @@
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { gfmFromMarkdown } from 'mdast-util-gfm';
+import { gfm } from 'micromark-extension-gfm';
 import type { Root } from 'mdast';
 
-const processor = unified().use(remarkParse).use(remarkGfm);
+const markdownParseOptions = {
+  extensions: [gfm()],
+  mdastExtensions: [gfmFromMarkdown()],
+};
 
 export function parseMarkdown(markdown: string): Root {
-  return processor.parse(markdown) as Root;
+  return fromMarkdown(markdown, markdownParseOptions);
 }

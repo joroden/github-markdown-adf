@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/github-markdown-adf)](https://www.npmjs.com/package/github-markdown-adf)
 [![CI](https://github.com/joroden/github-markdown-adf/actions/workflows/ci.yml/badge.svg)](https://github.com/joroden/github-markdown-adf/actions)
-[![Socket Badge](https://badge.socket.dev/npm/package/github-markdown-adf/1.1.0)](https://badge.socket.dev/npm/package/github-markdown-adf/1.1.0)
+[![Socket Badge](https://badge.socket.dev/npm/package/github-markdown-adf)](https://badge.socket.dev/npm/package/github-markdown-adf)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](https://unlicense.org)
 
 Bidirectional **GitHub Flavored Markdown (GFM) to / from Atlassian Document Format (ADF)** converter. 
@@ -138,7 +138,7 @@ import { mdToAdf, adfToMd } from 'github-markdown-adf';
 
 ### `mdToAdf(markdown: string): AdfDoc`
 
-Converts a GFM string to an ADF document object. Parses using [remark](https://github.com/remarkjs/remark) / [unified](https://github.com/unifiedjs/unified) with full GFM extensions: tables, task lists, strikethrough, and GitHub Alert syntax (`> [!NOTE]`, `> [!WARNING]`, etc.).
+Converts a GFM string to an ADF document object. Parses using mdast and micromark GFM extensions, with support for tables, task lists, strikethrough, and GitHub Alert syntax (`> [!NOTE]`, `> [!WARNING]`, etc.).
 
 ### `adfToMd(adf: AdfDoc, options?: AdfToMdOptions): string`
 

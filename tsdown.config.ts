@@ -1,11 +1,6 @@
 import { defineConfig } from 'tsdown';
 
 const runtimeDeps = [
-  'unified',
-  'remark',
-  'remark-parse',
-  'remark-gfm',
-  'remark-stringify',
   'mdast-util-from-markdown',
   'mdast-util-gfm',
   'micromark-extension-gfm',
