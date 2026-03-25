@@ -19,6 +19,7 @@ function serializeInline(node: AdfInlineNode, options?: AdfToMdOptions): string 
       return '\\\n';
     case 'mention':
       if (options?.mentions === false) return node.attrs.text ?? node.attrs.id;
+      if (typeof options?.mentions === 'function') return options.mentions(node.attrs);
       return node.attrs.text ?? `@${node.attrs.id}`;
     case 'emoji':
       return node.attrs.text ?? `:${node.attrs.shortName}:`;

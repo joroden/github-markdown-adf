@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { adfToMd } from '../../src/adf-to-md/index.js';
-import type { AdfDoc, AdfInlineNode, ParagraphNode } from '../../src/types/index.js';
+import type { AdfDoc, AdfInlineNode, MentionNode, ParagraphNode } from '../../src/types/index.js';
 
 function doc(...content: object[]): AdfDoc {
   return { version: 1, type: 'doc', content: content as AdfDoc['content'] };
@@ -55,6 +55,49 @@ describe('adfToMd options', () => {
         { mentions: false },
       );
       expect(result).toBe('Hello Alice!');
+    });
+
+    it('mentions transformer can render custom markdown', () => {
+      const result = adfToMd(
+        doc(
+          para(
+            { type: 'text', text: 'Hello ' },
+            { type: 'mention', attrs: { id: 'abc123', text: 'Alice' } },
+            { type: 'text', text: '!' },
+          ),
+        ),
+        {
+          mentions: (attrs) => `[@${attrs.text ?? attrs.id}](https://example.com/users/${attrs.id})`,
+        },
+      );
+
+      expect(result).toBe('Hello [@Alice](https://example.com/users/abc123)!');
+    });
+
+    it('mentions transformer receives the raw mention attrs', () => {
+      let receivedAttrs: MentionNode['attrs'] | undefined;
+
+      const result = adfToMd(
+        doc(
+          para({
+            type: 'mention',
+            attrs: { id: 'abc123', userType: 'APP', accessLevel: 'APPLICATION' },
+          }),
+        ),
+        {
+          mentions: (attrs) => {
+            receivedAttrs = attrs;
+            return `<@${attrs.id}>`;
+          },
+        },
+      );
+
+      expect(result).toBe('<@abc123>');
+      expect(receivedAttrs).toEqual({
+        id: 'abc123',
+        userType: 'APP',
+        accessLevel: 'APPLICATION',
+      });
     });
   });
 });

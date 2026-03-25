@@ -1,5 +1,6 @@
 import type { Table, TableRow } from 'mdast';
 import type {
+  MdToAdfOptions,
   TableCellNode,
   TableHeaderNode,
   TableNode,
@@ -7,7 +8,10 @@ import type {
 } from '../../types/index.js';
 import { phrasingToInlineNodes } from './marks.js';
 
-export function transformTable(node: Table): TableNode {
+export function transformTable(
+  node: Table,
+  options?: MdToAdfOptions,
+): TableNode {
   const rows = node.children;
   if (rows.length === 0) return { type: 'table', content: [] };
 
@@ -19,14 +23,14 @@ export function transformTable(node: Table): TableNode {
   if (headerRow) {
     adfRows.push({
       type: 'tableRow',
-      content: headerRow.children.map((cell) => transformTableHeader(cell)),
+      content: headerRow.children.map((cell) => transformTableHeader(cell, options)),
     });
   }
 
   for (const row of bodyRows) {
     adfRows.push({
       type: 'tableRow',
-      content: row.children.map((cell) => transformTableCell(cell)),
+      content: row.children.map((cell) => transformTableCell(cell, options)),
     });
   }
 
@@ -35,8 +39,9 @@ export function transformTable(node: Table): TableNode {
 
 function transformTableHeader(
   cell: TableRow['children'][number],
+  options?: MdToAdfOptions,
 ): TableHeaderNode {
-  const inlines = phrasingToInlineNodes(cell.children);
+  const inlines = phrasingToInlineNodes(cell.children, options);
   return {
     type: 'tableHeader',
     attrs: {},
@@ -46,8 +51,11 @@ function transformTableHeader(
   };
 }
 
-function transformTableCell(cell: TableRow['children'][number]): TableCellNode {
-  const inlines = phrasingToInlineNodes(cell.children);
+function transformTableCell(
+  cell: TableRow['children'][number],
+  options?: MdToAdfOptions,
+): TableCellNode {
+  const inlines = phrasingToInlineNodes(cell.children, options);
   return {
     type: 'tableCell',
     attrs: {},
