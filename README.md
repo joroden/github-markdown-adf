@@ -107,6 +107,7 @@ A self-contained browser bundle with all dependencies inlined is available via C
 | Task lists | `- [ ] todo` / `- [x] done` |
 | Code blocks | ` ```lang ` fenced blocks |
 | Tables | GFM pipe tables |
+| Mentions | Plain `@username` text → ADF mention nodes when `mdToAdf` mentions option is enabled |
 | GitHub Alerts | `> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]` → ADF Panels |
 | Expandable sections | `<details><summary>…</summary>…</details>` → ADF Expand nodes |
 
@@ -140,25 +141,48 @@ import { mdToAdf, adfToMd } from 'github-markdown-adf';
 
 Converts a GFM string to an ADF document object. Parses using mdast and micromark GFM extensions, with support for tables, task lists, strikethrough, and GitHub Alert syntax (`> [!NOTE]`, `> [!WARNING]`, etc.).
 
+### `mdToAdf(markdown: string, options?: MdToAdfOptions): AdfDoc`
+
+Converts a GFM string to an ADF document object, with optional parsing controls such as custom mention mapping.
+
 ### `adfToMd(adf: AdfDoc, options?: AdfToMdOptions): string`
 
 Converts an ADF document object to a GFM string. Handles all standard ADF node and mark types and produces clean, readable output targeting GitHub Flavored Markdown.
 
 ## Options
 
-`adfToMd` accepts an optional second argument to control rendering behaviour.
+`mdToAdf` and `adfToMd` accept an optional second argument to control mention handling and rendering behaviour.
+
+### `MdToAdfOptions`
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `mentions` | `boolean \| ((username: string) => MentionNode['attrs'] \| null \| undefined)` | `false` | When omitted or `false`, plain `@username` text stays unchanged. When `true`, plain `@alice` text becomes `{ type: 'mention', attrs: { id: 'alice', text: '@alice' } }`. When a function is provided, it receives the username without the `@` prefix and should return mention attrs. Returning `null` or `undefined` leaves the original markdown text unchanged. |
 
 ### `AdfToMdOptions`
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `mentions` | `boolean` | `true` | When `true`, renders mention nodes as the display text if available, otherwise as `@{id}`. When `false`, renders as plain text: display text if available, otherwise just the bare `{id}` without an `@` prefix. |
+| `mentions` | `boolean \| ((attrs: MentionNode['attrs']) => string)` | `true` | When `true`, renders mention nodes as the display text if available, otherwise as `@{id}`. When `false`, renders as plain text: display text if available, otherwise just the bare `{id}` without an `@` prefix. When a function is provided, it receives the mention attrs and its return value is used as-is. |
 
 ### Usage example
 
 ```typescript
+// Convert plain @mentions into ADF mention nodes
+const adfDoc = mdToAdf('Assigned to @some-user', {
+  mentions: (username) => ({
+    id: 'jira-account-id',
+    text: username === 'some-user' ? '@Some User' : `@${username}`,
+  }),
+});
+
 // Render mentions as plain text instead of @-tagged references
 const md = adfToMd(adfDoc, { mentions: false });
+
+// Render mentions with a custom formatter
+const mdWithCustomMentions = adfToMd(adfDoc, {
+  mentions: (attrs) => `[@${attrs.text ?? attrs.id}](https://example.com/users/${attrs.id})`,
+});
 ```
 
 ## TypeScript Types
@@ -170,7 +194,7 @@ import type { AdfDoc, AdfNode, AdfMark, AdfInlineNode, AdfTopLevelBlockNode } fr
 // Also available: ParagraphNode, HeadingNode, TableNode, PanelNode, CodeBlockNode,
 // BulletListNode, OrderedListNode, TaskListNode, TextNode, MentionNode, ...and more
 
-import type { AdfToMdOptions } from 'github-markdown-adf';
+import type { AdfToMdOptions, MdToAdfOptions } from 'github-markdown-adf';
 ```
 
 ## Requirements

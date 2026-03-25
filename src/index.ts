@@ -48,5 +48,6 @@ export type {
   TextColorMark,
   BackgroundColorMark,
   AnnotationMark,
+  MdToAdfOptions,
   AdfToMdOptions,
 } from './types/index.js';

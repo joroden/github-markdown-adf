@@ -11,6 +11,7 @@ import type {
   BlockquoteNode,
   CodeBlockNode,
   HeadingNode,
+  MdToAdfOptions,
   PanelNode,
   PanelType,
   ParagraphNode,
@@ -19,16 +20,22 @@ import type {
 import { normalizeLanguage } from '../../utils/language.js';
 import { phrasingToInlineNodes } from './marks.js';
 
-export function transformHeading(node: Heading): HeadingNode {
+export function transformHeading(
+  node: Heading,
+  options?: MdToAdfOptions,
+): HeadingNode {
   return {
     type: 'heading',
     attrs: { level: node.depth as 1 | 2 | 3 | 4 | 5 | 6 },
-    content: phrasingToInlineNodes(node.children),
+    content: phrasingToInlineNodes(node.children, options),
   };
 }
 
-export function transformParagraph(node: Paragraph): ParagraphNode {
-  const content = phrasingToInlineNodes(node.children);
+export function transformParagraph(
+  node: Paragraph,
+  options?: MdToAdfOptions,
+): ParagraphNode {
+  const content = phrasingToInlineNodes(node.children, options);
   return { type: 'paragraph', content };
 }
 
@@ -58,6 +65,7 @@ function buildPanelContent(
   firstChild: Paragraph,
   restChildren: BlockContent[],
   transformChildren: (nodes: BlockContent[]) => AdfTopLevelBlockNode[],
+  options?: MdToAdfOptions,
 ): AdfTopLevelBlockNode[] {
   const firstText = firstChild.children[0] as { type: 'text'; value: string };
   const remainingText = firstText.value.replace(ALERT_PATTERN, '').trim();
@@ -74,7 +82,7 @@ function buildPanelContent(
       ],
     };
     if (paragraph.children.length > 0) {
-      contentNodes.push(transformParagraph(paragraph));
+      contentNodes.push(transformParagraph(paragraph, options));
     }
   }
 
@@ -92,6 +100,7 @@ function buildPanelContent(
 function tryTransformAlert(
   node: Blockquote,
   transformChildren: (nodes: BlockContent[]) => AdfTopLevelBlockNode[],
+  options?: MdToAdfOptions,
 ): PanelNode | null {
   const firstChild = node.children[0];
   if (firstChild?.type !== 'paragraph') return null;
@@ -105,7 +114,7 @@ function tryTransformAlert(
   const alertType = (match[1] ?? 'NOTE').toUpperCase();
   const panelType: PanelType = ALERT_TO_PANEL[alertType] ?? 'info';
   const restChildren = node.children.slice(1) as BlockContent[];
-  const content = buildPanelContent(firstChild, restChildren, transformChildren);
+  const content = buildPanelContent(firstChild, restChildren, transformChildren, options);
 
   return { type: 'panel', attrs: { panelType }, content: content as PanelNode['content'] };
 }
@@ -113,8 +122,9 @@ function tryTransformAlert(
 export function transformBlockquote(
   node: Blockquote,
   transformChildren: (nodes: BlockContent[]) => AdfTopLevelBlockNode[],
+  options?: MdToAdfOptions,
 ): BlockquoteNode | PanelNode {
-  const panel = tryTransformAlert(node, transformChildren);
+  const panel = tryTransformAlert(node, transformChildren, options);
   if (panel) return panel;
 
   const content = transformChildren(
